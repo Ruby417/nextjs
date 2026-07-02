@@ -93,6 +93,7 @@ export async function fetchFilteredInvoices(
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
   try {
+    
     const invoices = await sql<InvoicesTable[]>`
       SELECT
         invoices.id,
@@ -114,6 +115,7 @@ export async function fetchFilteredInvoices(
       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
     `;
 
+    console.table(invoices);
     return invoices;
   } catch (error) {
     console.error('Database Error:', error);
@@ -142,6 +144,31 @@ export async function fetchInvoicesPages(query: string) {
   }
 }
 
+// export async function fetchInvoiceById(id: string) {
+//   try {
+//     const data = await sql<InvoiceForm[]>`
+//       SELECT
+//         invoices.id,
+//         invoices.customer_id,
+//         invoices.amount,
+//         invoices.status
+//       FROM invoices
+//       WHERE invoices.id = ${id};
+//     `;
+
+//     const invoice = data.map((invoice) => ({
+//       ...invoice,
+//       // Convert amount from cents to dollars
+//       amount: invoice.amount / 100,
+//     }));
+
+//     return invoice[0];
+//   } catch (error) {
+//     console.error('Database Error:', error);
+//     throw new Error('Failed to fetch invoice.');
+//   }
+// }
+
 export async function fetchInvoiceById(id: string) {
   try {
     const data = await sql<InvoiceForm[]>`
@@ -154,12 +181,18 @@ export async function fetchInvoiceById(id: string) {
       WHERE invoices.id = ${id};
     `;
 
+    // 1. Check if the array is empty before mutating/returning
+    if (!data || data.length === 0) {
+      return null; 
+    }
+
     const invoice = data.map((invoice) => ({
       ...invoice,
-      // Convert amount from cents to dollars
       amount: invoice.amount / 100,
     }));
 
+    console.log(invoice); // Invoice is an empty array []
+    
     return invoice[0];
   } catch (error) {
     console.error('Database Error:', error);
